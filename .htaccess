@@ -9,3 +9,8 @@ RewriteCond %{REQUEST_FILENAME} !-d
 
 # Rewrite rule to append .php extension correctly
 RewriteRule ^([^/]+)/?$ $1.php [L]
+
+# Block all access
+RewriteRule ^app/ - [F,L]
+RewriteRule ^logs/ - [F,L]
+RewriteRule ^config/ - [F,L]

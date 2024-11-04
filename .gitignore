@@ -1,1 +1,10 @@
 config.php
+logs/*
+app/node_modules/
+app/package-lock.json
+.env
+.htaccess
+
+
+login.php
+logout.php
