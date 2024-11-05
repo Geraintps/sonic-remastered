@@ -210,6 +210,9 @@ function updateCommands($database): void {
 									// check if we have a description
 									$description = (isset($definitions['description'])) ? $definitions['description'] : '';
 
+									// check if we have a module
+									$module = (isset($definitions['module'])) ? $definitions['module'] : '';
+
 									// set the command id
 									$commandId = 0;
 
@@ -221,12 +224,12 @@ function updateCommands($database): void {
 										$commandId = $row['comm_id'];
 
 										// update the command name and description
-										$query = "UPDATE commands SET comm_name = '" . $name . "', comm_description = '" . $description . "' WHERE comm_id = '" . $commandId . "'";
+										$query = "UPDATE commands SET comm_name = '" . $name . "', comm_description = '" . $description . "', comm_module = '" . $module . "' WHERE comm_id = '" . $commandId . "'";
 										$database->runQuery($query);
 									} else if($result->num_rows == 0) {
 
 										// insert the command
-										$query = "INSERT INTO commands (comm_name, comm_description) VALUES ('" . $name . "', '" . $description . "')";
+										$query = "INSERT INTO commands (comm_name, comm_description, comm_module) VALUES ('" . $name . "', '" . $description . "', '" . $module . "')";
 										$database->runQuery($query);
 
 										// get the command id
@@ -383,7 +386,8 @@ function getCommands($database): array {
 		$query = "SELECT
 				comm_id,
 				comm_name AS name,
-				comm_description AS description
+				comm_description AS description,
+				comm_module AS module
 			FROM
 				commands
 			WHERE

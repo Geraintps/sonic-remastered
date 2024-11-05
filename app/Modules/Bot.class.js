@@ -80,7 +80,7 @@ class Bot extends BotCore {
 		const commandName = interaction.commandName;
 
 		// get the submitted options
-		const options = interaction.options;
+		const options = interaction.options.data;
 
 		// get the user
 		const user = interaction.user;
@@ -89,10 +89,16 @@ class Bot extends BotCore {
 
 		// call the command module
 		var command = new Command(this.postLink, this.settings, this.client, commandName);
+		command.setOptions(options);
 		await command.run();
 
 		// get the response
 		const response = command.getResponse();
+
+		// check we have a message
+		if(!response.message) {
+			response.message = "I'm speechless...";
+		}
 
 		// check for errors
 		if(response.success) {

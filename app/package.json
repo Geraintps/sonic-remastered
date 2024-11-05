@@ -2,8 +2,11 @@
 	"name": "sonic",
 	"main": "bot.js",
 	"dependencies": {
+		"@discordjs/voice": "^0.17.0",
 		"axios": "^1.7.2",
 		"discord.js": "^14.15.3",
-		"dotenv": "^16.4.5"
+		"dotenv": "^16.4.5",
+		"ffmpeg-static": "^5.2.0",
+		"ytdl-core": "^4.11.5"
 	}
 }
