@@ -3,6 +3,10 @@ const { Client, ActionRowBuilder, ButtonBuilder, ButtonStyle, Util, GatewayInten
 const client = new Client({
     intents: [
 		GatewayIntentBits.Guilds
+		, GatewayIntentBits.GuildVoiceStates
+		, GatewayIntentBits.GuildMessages
+		, GatewayIntentBits.GuildMessageReactions
+		, GatewayIntentBits.GuildMessageTyping
 	]
 });
 
@@ -16,3 +20,7 @@ const Command = require('./Modules/Command.class');
 
 // prepare the bot
 const bot = new Bot(postLink, {}, client);
+
+process.on('unhandledRejection', error => {
+	console.error('Unhandled promise rejection:', error);
+});

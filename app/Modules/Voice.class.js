@@ -1,6 +1,9 @@
 const Command = require("./Command.class");
 const { joinVoiceChannel, createAudioPlayer, createAudioResource, AudioPlayerStatus, StreamType } = require('@discordjs/voice');
-const ytdl = require('ytdl-core');
+const ytdl = require('@distube/ytdl-core');
+const playdl = require('play-dl');
+const ytSearch = require('yt-search');
+const fs = require('fs');
 
 class Voice extends Command {
 	constructor(postLink, settings = {}, client, command) {
@@ -8,6 +11,7 @@ class Voice extends Command {
 		this.queue = [];
 		this.connection = null;
 		this.player = createAudioPlayer();
+		this.user;
 		this.channel = null;
 		this.isPlaying = false;
 		this.action;
@@ -16,6 +20,19 @@ class Voice extends Command {
 
 		// event listener for when the current track finishes playing
 		this.player.on(AudioPlayerStatus.Idle, () => {
+			this.setOutput('Track finished playing');
+			this.isPlaying = false;
+			this.queue.shift();
+			if (this.queue.length > 0) {
+				this.playNext();
+			} else {
+				// this.disconnect();
+			}
+		});
+
+		// event listener for errors
+		this.player.on('error', error => {
+			this.setError(error.message, error.stack);
 			this.isPlaying = false;
 			this.queue.shift();
 			if (this.queue.length > 0) {
@@ -25,16 +42,8 @@ class Voice extends Command {
 			}
 		});
 
-		// event listener for errors
-		this.player.on('error', error => {
-			this.setError(error.message);
-			this.isPlaying = false;
-			this.queue.shift();
-			if (this.queue.length > 0) {
-				this.playNext();
-			} else {
-				this.disconnect();
-			}
+		this.player.on('stateChange', (oldState, newState) => {
+			this.setOutput(`Audio player state changed from ${oldState.status} to ${newState.status}`);
 		});
 	}
 
@@ -57,14 +66,18 @@ class Voice extends Command {
 		this.options = options;
 	}
 
+	setUser(user) {
+		this.user = user;
+	}
+
 	async run() {
 
 		// check we have an action
-		if(this.action != '') {
+		if (this.action != '') {
 			try {
-				switch(this.action) {
+				switch (this.action) {
 					case 'play':
-						await this.addToQueue(this.settings.videoUrl, this.settings.user);
+						await this.addToQueue();
 						break;
 					case 'skip':
 						this.skip();
@@ -88,17 +101,42 @@ class Voice extends Command {
 		}
 	}
 
-	async addToQueue(videoUrl, user) {
+	async addToQueue() {
 
-		// validate YouTube URL
-		if (!ytdl.validateURL(videoUrl)) {
-			this.setError('Invalid YouTube URL.');
-			this.#setResponse(0, `Invalid YouTube URL`);
+		// check if the song option is set
+		if (!this.options
+			|| !this.options.song
+		) {
+			this.setError('No song provided');
+			this.#setResponse(0, `You need to provide a song to play.`);
 			return;
 		}
 
+		// set the song
+		const songRequest = this.options.song;
+
+		// set the song url
+		let videoUrl = "";
+
+		// // validate YouTube URL
+		// if (!ytdl.validateURL(songRequest)) {
+
+		// 	// treat the input as a search query
+		// 	const searchResult = await this.searchYouTube(songRequest);
+
+		// 	// check if we have a search result
+		// 	if (searchResult) {
+		// 		videoUrl = searchResult.url;
+		// 	} else {
+		// 		this.#setResponse(1, `No results found for **"${songRequest}"**.`);
+		// 		return;
+		// 	}
+		// } else {
+		// 	videoUrl = songRequest;
+		// }
+
 		// get the voice channel of the user
-		const voiceChannel = user.voice.channel;
+		const voiceChannel = this.user.voice.channel;
 		if (!voiceChannel) {
 			this.#setResponse(0, `You need to be in a voice channel to play music!`);
 			return;
@@ -114,24 +152,32 @@ class Voice extends Command {
 			await this.connect(voiceChannel);
 		}
 
+		await playdl.getFreeClientID().then((clientID) => playdl.setToken({
+			soundcloud : {
+				client_id : clientID
+			}
+		}));
+
 		// fetch song info
-		const songInfo = await ytdl.getInfo(videoUrl);
+		// const songInfo = await ytdl.getInfo(videoUrl);
+		// const songInfo = await playdl.video_basic_info(videoUrl);
+		const track = await playdl.search(songRequest, { source : { soundcloud : "tracks" } });
 		const song = {
-			title: songInfo.videoDetails.title,
-			url: songInfo.videoDetails.video_url,
+			title: track[0].name,
+			url: track[0].url,
 		};
 
 		// add the song to the queue
 		this.queue.push(song);
-		this.#setResponse(1, `✅ **${song.title}** has been added to the queue!`);
+		this.#setResponse(1, `**${song.title}** has been added to the queue!`);
 
 		// start playing if not already
 		if (!this.isPlaying) {
-			this.playNext();
+			await this.playNext();
 		}
 	}
 
-	playNext() {
+	async playNext() {
 		if (this.queue.length === 0) {
 			this.#setResponse(1, 'The queue is empty.');
 			return;
@@ -140,19 +186,41 @@ class Voice extends Command {
 		const song = this.queue[0];
 		this.isPlaying = true;
 
-		const stream = ytdl(song.url, {
-			filter: 'audioonly',
-			highWaterMark: 1 << 25, // Increase buffer size
+		const stream = await playdl.stream(song.url, {
+			quality: 2, // 0 = low, 1 = medium, 2 = high
+			discordPlayerCompatibility: true,
 		});
 
-		const resource = createAudioResource(stream, {
-			inputType: StreamType.Arbitrary,
+		stream.stream.on('error', error => {
+			this.setError(error);
 		});
+
+		const resource = createAudioResource(stream.stream, {
+			inputType: stream.type
+		});
+
+		// const resource = createAudioResource(fs.createReadStream('./bins.mp3'), {
+		// 	inputType: StreamType.Arbitrary, // Or StreamType.Raw if Arbitrary doesn't work
+		// });
 
 		this.player.play(resource);
 		this.connection.subscribe(this.player);
 
-		this.#setResponse(1, `🎵 Now playing: **${song.title}**`);
+		this.#setResponse(1, `Now playing: **${song.title}**`);
+	}
+
+	async searchYouTube(query) {
+		try {
+			const result = await ytSearch(query);
+			if (result && result.videos && result.videos.length > 0) {
+				return result.videos[0]; // return the first search result
+			} else {
+				return null;
+			}
+		} catch (error) {
+			this.setError(error.message, error.stack);
+			return null;
+		}
 	}
 
 	async connect(voiceChannel) {
@@ -169,10 +237,11 @@ class Voice extends Command {
 			channelId: voiceChannel.id,
 			guildId: voiceChannel.guild.id,
 			adapterCreator: voiceChannel.guild.voiceAdapterCreator,
+			selfDeaf: false
 		});
 
 		this.channel = voiceChannel;
-		this.#setResponse(1, `Joined **${voiceChannel.name}** and ready to play music!`);
+		this.#setResponse(1, `Joined **${voiceChannel.name}**!`);
 	}
 
 	async disconnect() {
@@ -188,10 +257,10 @@ class Voice extends Command {
 	skip() {
 		if (this.queue.length > 1) {
 			this.player.stop();
-			this.#setResponse(1, '⏭️ Skipped the current song.');
+			this.#setResponse(1, 'Skipped the current song.');
 		} else {
 			this.player.stop();
-			this.#setResponse(1, '⏭️ Skipped the current song. The queue is now empty.');
+			this.#setResponse(1, 'Skipped the current song. The queue is now empty.');
 		}
 	}
 
@@ -199,7 +268,7 @@ class Voice extends Command {
 		this.queue = [];
 		this.player.stop();
 		this.disconnect();
-		this.#setResponse(1, '⏹️ Stopped playback and cleared the queue.');
+		this.#setResponse(1, 'Stopped playback and cleared the queue.');
 	}
 
 	viewQueue() {
@@ -211,7 +280,7 @@ class Voice extends Command {
 		const queueString = this.queue
 			.map((song, index) => `${index + 1}. **${song.title}**`)
 			.join('\n');
-		this.#setResponse(1, `🎶 **Current Queue:**\n${queueString}`);
+		this.#setResponse(1, `**Current Queue:**\n${queueString}`);
 	}
 }
 

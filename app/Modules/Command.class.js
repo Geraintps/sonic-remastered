@@ -4,15 +4,23 @@ class Command extends BotCore {
 	constructor(postLink, settings = {}, client, command = '') {
 		super(postLink, settings, client);
 		this.command = command;
-		this.options;
+		this.options = {};
+		this.user;
 		this.active = false;
 		this.module = '';
+		this.modules = {};
 		this.response = {};
 		this.checkActive();
 		this.checkModule();
 	}
 
-	setOptions(options) {
+	setCommand(command) {
+		this.command = command;
+		this.checkActive();
+		this.checkModule();
+	}
+
+	setCommandOptions(options) {
 
 		// check we have options
 		if(options) {
@@ -23,8 +31,11 @@ class Command extends BotCore {
 				// check we have a name
 				if(option.name) {
 
+					// get the name
+					const name = option.name;
+
 					// set the option
-					this.options[option.name] = option.value;
+					this.options[name] = option.value;
 				}
 			});
 		}
@@ -71,6 +82,10 @@ class Command extends BotCore {
 		this.command = command;
 	}
 
+	setCommandUser(user) {
+		this.user = user;
+	}
+
 	setResponse(response) {
 		this.response = response;
 	}
@@ -105,10 +120,23 @@ class Command extends BotCore {
 
 					// check if we should load a module
 					if(this.module != '') {
-						const Module = require(`./${this.module}.class`);
-						var module = new Module(this.postLink, this.settings, this.client, this.command);
+
+						// initialize the module
+						var Module = require(`./${this.module}.class`);
+						var module;
+
+						// check if we've already loaded the module
+						if(this.modules[this.module]) {
+							module = this.modules[this.module];
+						} else {
+							module = new Module(this.postLink, this.settings, this.client, this.command);
+							this.modules[this.module] = module;
+						}
+
+						// set the action, options, and user
 						module.setAction(this.command);
 						module.setOptions(this.options);
+						module.setUser(this.user);
 						await module.run();
 						this.setResponse(module.getResponse());
 					} else {

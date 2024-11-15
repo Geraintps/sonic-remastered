@@ -9,6 +9,7 @@ class Bot extends BotCore {
 
 	constructor(postLink, settings = {}, client) {
 		super(postLink, settings, client);
+		this.Command;
 		this.setup();
 	}
 
@@ -83,28 +84,36 @@ class Bot extends BotCore {
 		const options = interaction.options.data;
 
 		// get the user
-		const user = interaction.user;
+		const user = interaction.member;
 		const username = String(interaction.member.user.username);
         const userid = String(interaction.member.id);
 
+		// defer the reply
+		await interaction.deferReply();
+
 		// call the command module
-		var command = new Command(this.postLink, this.settings, this.client, commandName);
-		command.setOptions(options);
-		await command.run();
+		if(!this.Command) {
+			this.Command =  new Command(this.postLink, this.settings, this.client, commandName);
+		} else {
+			this.Command.setCommand(commandName);
+		}
+		this.Command.setCommandOptions(options);
+		this.Command.setCommandUser(user);
+		await this.Command.run();
 
 		// get the response
-		const response = command.getResponse();
+		const response = this.Command.getResponse();
 
 		// check we have a message
 		if(!response.message) {
-			response.message = "I'm speechless...";
+			response.message = "I literally don't know what to say...";
 		}
 
 		// check for errors
 		if(response.success) {
-			await interaction.reply(response.message);
+			await interaction.editReply(response.message);
 		} else {
-			await interaction.reply({ content: response.message, ephemeral: true });
+			await interaction.editReply({ content: response.message, ephemeral: true });
 		}
 	}
 
