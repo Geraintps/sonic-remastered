@@ -51,8 +51,6 @@ services:
     depends_on:
       db:
         condition: service_healthy
-    command: >
-      bash -c "echo 'ServerName sonic-phpmyadmin' >> /etc/apache2/apache2.conf && apache2-foreground"
 
 volumes:
   db_data:
