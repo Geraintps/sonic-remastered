@@ -8,7 +8,7 @@ services:
     hostname: sonic-web
     restart: unless-stopped
     ports:
-      - "80:80"
+      - "80:80"  # HOST:CONTAINER
     volumes:
       - ./src:/var/www/html
       - /var/www/html/app/node_modules
@@ -20,7 +20,7 @@ services:
       db:
         condition: service_healthy
     command: >
-      bash -c "apache2-foreground & cd /var/www/html/app && node bot.js"
+      bash -c "apache2-foreground & sleep 5 && cd /var/www/html/app && node bot.js"
 
   db:
     image: mysql:8.0
@@ -45,12 +45,14 @@ services:
     hostname: sonic-phpmyadmin
     restart: unless-stopped
     ports:
-      - "8080:80"
+      - "8080:80"  # HOST:CONTAINER
     environment:
       PMA_HOST: sonic-db
     depends_on:
       db:
         condition: service_healthy
+    command: >
+      bash -c "echo 'ServerName sonic-phpmyadmin' >> /etc/apache2/apache2.conf && apache2-foreground"
 
 volumes:
   db_data:

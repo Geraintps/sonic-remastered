@@ -105,30 +105,29 @@ class BotCore {
 				success: false,
 				message: 'Something went wrong...'
 			};
-		} else {
+		} 
 
-			// encrypt the data
-			const jsonData = JSON.stringify(this.#postData);
-			const encryptedData = this.encrypt(jsonData);
+		// encrypt the data
+		const jsonData = JSON.stringify(this.#postData);
+		const encryptedData = this.encrypt(jsonData);
 
-			// try to post the data
-			try {
+		// try to post the data
+		try {
 
-				// post the data
-				const response = await axios.post(this.postLink, encryptedData);
-				const decrypted = this.decrypt(response.data.encryptedData, response.data.iv);
-				return decrypted;
-			} catch (error) {
+			// post the data
+			const response = await axios.post(this.postLink, encryptedData);
+			const decrypted = this.decrypt(response.data.encryptedData, response.data.iv);
+			return decrypted;
+		} catch (error) {
 
-				// log the error
-				this.setError(error.message);
+			// log the error
+			this.setError(error.message);
 
-				// return error
-				return {
-					success: false,
-					message: 'Something went wrong...'
-				};
-			}
+			// return error
+			return {
+				success: false,
+				message: 'Something went wrong...'
+			};
 		}
 	}
 

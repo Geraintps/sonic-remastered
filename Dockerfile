@@ -17,6 +17,11 @@ RUN sed -i 's!/var/www/html!/var/www/html/public!g' /etc/apache2/sites-available
 # Set working directory
 WORKDIR /var/www/html
 
+# Create logs directory and set permissions
+RUN mkdir -p /var/www/html/logs \
+    && chown www-data:www-data /var/www/html/logs \
+    && chmod 775 /var/www/html/logs
+
 # Install Node.js dependencies first
 COPY src/app/package*.json ./app/
 WORKDIR /var/www/html/app
@@ -27,8 +32,9 @@ WORKDIR /var/www/html
 COPY src/ .
 
 # Set permissions
-RUN chown -R www-data:www-data /var/www/html \
-    && chmod -R 755 /var/www/html
+RUN usermod -u 1000 www-data \
+    && groupmod -g 1000 www-data \
+    && chown -R www-data:www-data /var/www/html
 
 # Apache configuration
 RUN echo "ServerName localhost" >> /etc/apache2/apache2.conf

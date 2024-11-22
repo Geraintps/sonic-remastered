@@ -26,7 +26,6 @@ $_SESSION['LAST_ACTIVITY'] = time();
 
 // Environment-based configuration
 define('SITE_LINK', getenv('SITE_LINK') ?: 'http://localhost/');
-define('POST_LINK', getenv('POST_LINK') ?: 'http://localhost/requests/process.php');
 define('ASSET_VERSION', '2.0');
 define('FOLDER_PERMISSION', 0755);
 define('ENVIRONMENT', getenv('ENVIRONMENT') ?: 'DEVELOPMENT');

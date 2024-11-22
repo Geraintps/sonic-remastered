@@ -75,7 +75,7 @@ function getLogFile($filename, $error, $d = ""): string {
 
 	$d = ($d == "") ? new DateTime("now") : $d;
 	$date = $d->format("Ymd");
-	$filepath = "../logs/";
+	$filepath = "/var/www/html/logs/";
 
 	// if we have certain log files, we might put them in subfolders - we want big errors in the main folder and info in sub-folders
 	// TODO: Create a more robust error process

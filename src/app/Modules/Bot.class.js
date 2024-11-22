@@ -4,14 +4,13 @@ const { SlashCommandBuilder } = require('@discordjs/builders');
 const { REST } = require('@discordjs/rest');
 const { Routes } = require('discord-api-types/v9');
 const isEmpty = (obj) => Object.keys(obj).length === 0;
+const postLink = 'http://127.0.0.1/requests/process.php';
 
 class Bot extends BotCore {
 
-	constructor(postLink, settings = {}, client) {
+	constructor(settings = {}, client) {
         super(postLink, settings, client);
         this.Command;
-        this.clientId = process.env.DISCORD_CLIENT_ID;
-        this.clientSecret = process.env.DISCORD_CLIENT_SECRET;
         this.setup();
     }
 
@@ -30,7 +29,7 @@ class Bot extends BotCore {
 		}
 
 		// login
-		this.client.login(this.clientSecret);
+		this.client.login(this.settings.clientKey);
 
 		// on ready
 		this.client.once("ready", this.onReady.bind(this));
@@ -184,9 +183,9 @@ class Bot extends BotCore {
 		});
 
 		// register the commands
-		const rest = new REST({ version: '9' }).setToken(this.clientSecret);
+		const rest = new REST({ version: '9' }).setToken(this.settings.clientKey);
 		try {
-			await rest.put(Routes.applicationGuildCommands(this.clientId, guild.id), { body: commands });
+			await rest.put(Routes.applicationGuildCommands(this.settings.clientId, guild.id), { body: commands });
 			this.setOutput(`Successfully registered application commands for guild ${guild.name} (${guild.id})`);
 			return true;
 		} catch (error) {
