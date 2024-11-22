@@ -8,10 +8,12 @@ const isEmpty = (obj) => Object.keys(obj).length === 0;
 class Bot extends BotCore {
 
 	constructor(postLink, settings = {}, client) {
-		super(postLink, settings, client);
-		this.Command;
-		this.setup();
-	}
+        super(postLink, settings, client);
+        this.Command;
+        this.clientId = process.env.DISCORD_CLIENT_ID;
+        this.clientSecret = process.env.DISCORD_CLIENT_SECRET;
+        this.setup();
+    }
 
 	async setup() {
 
@@ -28,7 +30,7 @@ class Bot extends BotCore {
 		}
 
 		// login
-		this.client.login(this.settings.clientKey);
+		this.client.login(this.clientSecret);
 
 		// on ready
 		this.client.once("ready", this.onReady.bind(this));
@@ -182,9 +184,9 @@ class Bot extends BotCore {
 		});
 
 		// register the commands
-		const rest = new REST({ version: '9' }).setToken(this.settings.clientKey);
+		const rest = new REST({ version: '9' }).setToken(this.clientSecret);
 		try {
-			await rest.put(Routes.applicationGuildCommands(this.settings.clientId, guild.id), { body: commands });
+			await rest.put(Routes.applicationGuildCommands(this.clientId, guild.id), { body: commands });
 			this.setOutput(`Successfully registered application commands for guild ${guild.name} (${guild.id})`);
 			return true;
 		} catch (error) {
