@@ -162,18 +162,24 @@ class Voice extends Command {
 		// const songInfo = await ytdl.getInfo(videoUrl);
 		// const songInfo = await playdl.video_basic_info(videoUrl);
 		const track = await playdl.search(songRequest, { source : { soundcloud : "tracks" } });
-		const song = {
-			title: track[0].name,
-			url: track[0].url,
-		};
 
-		// add the song to the queue
-		this.queue.push(song);
-		this.#setResponse(1, `**${song.title}** has been added to the queue!`);
+		// check we have a song
+		if (!track || track.length === 0) {
+			this.#setResponse(1, `No results found for **"${songRequest}"**.`);
+		} else {
+			const song = {
+				title: track[0].name,
+				url: track[0].url,
+			};
 
-		// start playing if not already
-		if (!this.isPlaying) {
-			await this.playNext();
+			// add the song to the queue
+			this.queue.push(song);
+			this.#setResponse(1, `**${song.title}** has been added to the queue!`);
+
+			// start playing if not already
+			if (!this.isPlaying) {
+				await this.playNext();
+			}
 		}
 	}
 

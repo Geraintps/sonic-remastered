@@ -46,16 +46,16 @@ class Bot extends BotCore {
 	}
 
 	async onGuildCreate(guild) {
-        try {
+		try {
 
-            // register commands for the new guild
+			// register commands for the new guild
 			this.setOutput(`Bot has been added to a new guild ${guild.name} (${guild.id}`);
 
-            await this.registerCommands(guild);
-        } catch (error) {
-            this.setError(error.message);
-        }
-    }
+			await this.registerCommands(guild);
+		} catch (error) {
+			this.setError(error.message);
+		}
+	}
 
 	async onReady() {
 
@@ -86,7 +86,7 @@ class Bot extends BotCore {
 		// get the user
 		const user = interaction.member;
 		const username = String(interaction.member.user.username);
-        const userid = String(interaction.member.id);
+		const userid = String(interaction.member.id);
 
 		// defer the reply
 		await interaction.deferReply();
