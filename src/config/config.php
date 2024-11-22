@@ -25,7 +25,7 @@ if (isset($_SESSION['LAST_ACTIVITY'])) {
 $_SESSION['LAST_ACTIVITY'] = time();
 
 // Environment-based configuration
-define('SITE_LINK', getenv('SITE_LINK') ?: 'http://localhost/sonic-remastered/');
+define('SITE_LINK', getenv('SITE_LINK') ?: 'http://localhost/');
 define('POST_LINK', getenv('POST_LINK') ?: 'http://localhost/requests/process.php');
 define('ASSET_VERSION', '2.0');
 define('FOLDER_PERMISSION', 0755);
@@ -39,6 +39,6 @@ define('PASSWORD', getenv('MYSQL_PASSWORD'));
 define('DB_NAME', getenv('MYSQL_DATABASE') ?: 'sonic');
 
 // Include functions
-require 'functions.php';
+require_once dirname(__DIR__) . '/public/functions.php';
 
 ?>

@@ -1,10 +1,10 @@
 <?php
 
-require '../config.php';
-require_once '../autoload.php';
+require_once '../../config/config.php';
+require_once '../../config/autoload.php';
 
-// set up the database connection
-require_once '../Database.class.php';
+// Database connection
+require_once '../../lib/Database.class.php';
 $database = Database::getInstance();
 
 // get the encryption key

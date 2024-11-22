@@ -9,11 +9,10 @@ services:
     ports:
       - "80:80"
     volumes:
-      - .:/var/www/html
-      - /var/www/html/node_modules
+      - ./src:/var/www/html
+      - /var/www/html/app/node_modules
     environment:
       - MYSQL_HOST=sonic-db
-      - POST_LINK=http://localhost/requests/process.php
     env_file: 
       - .env
     depends_on:

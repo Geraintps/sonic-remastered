@@ -10,17 +10,21 @@ RUN apt-get update && apt-get install -y \
 # Enable Apache modules
 RUN a2enmod rewrite
 
+# Configure Apache DocumentRoot
+RUN sed -i 's!/var/www/html!/var/www/html/public!g' /etc/apache2/sites-available/000-default.conf \
+    && sed -i 's!/var/www/!/var/www/html/public!g' /etc/apache2/apache2.conf
+
 # Set working directory
 WORKDIR /var/www/html
 
-# Install Node.js dependencies first (better layer caching)
-COPY app/package*.json ./app/
+# Install Node.js dependencies first
+COPY src/app/package*.json ./app/
 WORKDIR /var/www/html/app
 RUN npm install
 
 # Copy application files
 WORKDIR /var/www/html
-COPY . .
+COPY src/ .
 
 # Set permissions
 RUN chown -R www-data:www-data /var/www/html \
