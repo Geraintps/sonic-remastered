@@ -4,7 +4,6 @@ const axios = require('axios');
 // prepare encryption
 const crypto = require('crypto');
 const algorithm = 'aes-256-cbc';
-require('dotenv').config();
 const key = Buffer.from(process.env.ENCRYPTION_KEY, 'hex');
 const isEmpty = (obj) => Object.keys(obj).length === 0;
 
