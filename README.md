@@ -46,7 +46,7 @@ MYSQL_USER=sonic
 MYSQL_PASSWORD=your_generated_user_password
 
 # Application Configuration
-SITE_LINK=http://localhost/
+SITE_LINK=http://localhost:8000/ # use port 8000 for development (matching compose.yaml), otherwise specify FQDN in production
 ENVIRONMENT=DEVELOPMENT|PRODUCTION
 DEBUG=true|false
 ```
@@ -97,7 +97,7 @@ Because the bot container continually restarts, once the credentials are set the
 
 ## Service Access
 
-- Web Interface: http://localhost
+- Web Interface: http://localhost:8000
 - PHPMyAdmin: http://localhost:8080
 - Discord Bot: Will be active once credentials are configured
 
