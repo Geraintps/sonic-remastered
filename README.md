@@ -76,7 +76,7 @@ docker exec -i sonic-db /bin/bash -c 'mysql -u$MYSQL_USER -p$MYSQL_PASSWORD $MYS
 > You can verify the database import by checking the PHPMyAdmin interface at http://localhost:8080
 > Alternatively, you can use the following command to check the database:
 > ```bash
-> docker exec -it sonic-db /bin/bash -c 'mysql -u$MYSQL_USER -p$MYSQL_PASSWORD $MYSQL_DATABASE -e "SHOW TABLES;"'
+> docker exec -i sonic-db /bin/bash -c 'mysql -u$MYSQL_USER -p$MYSQL_PASSWORD $MYSQL_DATABASE -e "SHOW TABLES;"'
 > ```
 
 ## Discord Bot Configuration
@@ -125,13 +125,13 @@ src/
 │   ├── Modules
 │   ├── node_modules
 │   └── package.json
-├── config  # PHP Configuration
+├── config/  # PHP Configuration
 │   ├── autoload.php
 │   └── config.php
-├── lib  # PHP Classes
+├── lib/  # PHP Classes
 │   ├── Commands
 │   └── Database.class.php
-└── public  # Web Root
+└── public/  # Web Root
     ├── .htaccess
     ├── assets
     ├── functions.php
