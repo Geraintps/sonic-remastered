@@ -51,15 +51,11 @@ ENVIRONMENT=DEVELOPMENT|PRODUCTION
 DEBUG=true|false
 ```
 
-
 ## Starting the Services
-
-> [!IMPORTANT]
-> These steps presume you have an SQL database dump available to load in!
 
 Build and start the containers:
 ```bash
-docker compose up -d --build
+docker compose up -d --build  # omit -d to attach and see container logs live
 ```
 
 Wait for Docker to show that the database container is 'healthy'. You can also check manually with:
@@ -67,10 +63,7 @@ Wait for Docker to show that the database container is 'healthy'. You can also c
 docker compose ps
 ```
 
-Import the database:
-```bash
-docker exec -i sonic-db /bin/bash -c 'mysql -u$MYSQL_USER -p$MYSQL_PASSWORD $MYSQL_DATABASE' < dump.sql
-```
+By default, the database will be created with a clean schema (see [migrations](migrations/)). If you have an existing database dump, you can import it as described below.
 
 > [!NOTE]
 > You can verify the database import by checking the PHPMyAdmin interface at http://localhost:8080
@@ -78,6 +71,15 @@ docker exec -i sonic-db /bin/bash -c 'mysql -u$MYSQL_USER -p$MYSQL_PASSWORD $MYS
 > ```bash
 > docker exec -i sonic-db /bin/bash -c 'mysql -u$MYSQL_USER -p$MYSQL_PASSWORD $MYSQL_DATABASE -e "SHOW TABLES;"'
 > ```
+
+### Importing an existing database dump
+
+> [!IMPORTANT]
+> These steps presume you have an SQL database dump available to load in!
+
+```bash
+docker exec -i sonic-db /bin/bash -c 'mysql -u$MYSQL_USER -p$MYSQL_PASSWORD $MYSQL_DATABASE' < dump.sql
+```
 
 ## Discord Bot Configuration
 
@@ -91,6 +93,8 @@ Configure Discord Bot credentials:
     - `clientId`: Your Discord Bot's Client ID
     - `clientKey`: Your Discord Bot's Token
 
+Because the bot container continually restarts, once the credentials are set the bot should automatically connect and start.
+
 ## Service Access
 
 - Web Interface: http://localhost
@@ -102,7 +106,9 @@ Configure Discord Bot credentials:
 Reset everything and start fresh:
 ```bash
 docker compose down -v
-docker compose up -d --build
+docker compose up -d --build  
+# omit -d to attach and see logs
+# optionally omit --build if no changes have been made since last build
 ```
 
 View logs:
@@ -112,6 +118,15 @@ docker compose logs -f
 docker compose logs -f web
 docker compose logs -f db
 docker compose logs -f phpmyadmin
+```
+
+Generate a clean database schema for initial database structure:
+```bash
+# First, generate the full schema
+docker exec -i sonic-db /bin/bash -c 'mysqldump -u$MYSQL_USER -p$MYSQL_PASSWORD --no-data --no-tablespaces $MYSQL_DATABASE' > migrations/V1__schema.sql
+
+# Then get sys_settings structure
+docker exec -i sonic-db /bin/bash -c 'mysqldump -u$MYSQL_USER -p$MYSQL_PASSWORD --complete-insert --no-create-info --skip-extended-insert --no-tablespaces $MYSQL_DATABASE sys_settings' > migrations/V2__sys_settings_template.sql
 ```
 
 ## Project Structure
