@@ -129,14 +129,35 @@ function getLogFile($filename, $error, $d = ""): string {
 	return $filepath.$filename;
 }
 
+/**
+ * Logs a debug message with an optional context.
+ *
+ * @param string $message The debug message to log.
+ * @param array $context Optional. An array of context information to include with the message. Default is an empty array.
+ */
+function debug($message, $context = []) {
+	if (!DEBUG) {
+        return;
+    }
+    $contextStr = empty($context) ? '' : ' ' . json_encode($context, JSON_UNESCAPED_SLASHES);
+    error_log("[DEBUG] {$message}{$contextStr}");
+}
+
 function updateCommands($database): void {
+	debug("Updating commands");
 
 	// check if we have a database connection
 	if($database instanceof Database) {
 
 		// get the commands directory
-		$directory = __DIR__ . '/Commands';
+		$directory = dirname(__DIR__) . '/lib/Commands';
 		$files = glob($directory . '/*.php');
+
+		// Log the search path and found files
+        debug("Command directory scan", [
+            'directory' => $directory,
+            'files' => $files
+        ]);
 
 		foreach ($files as $file) {
 			$filename = basename($file);
@@ -147,6 +168,12 @@ function updateCommands($database): void {
 
 			// remove .class from the name
 			$className = str_replace('.class', '', $className);
+
+			// Log each command file being processed
+            debug("Processing command file", [
+                'filename' => $filename,
+                'path' => $file
+            ]);
 
 			// check this isn't the main Command class
 			if ($className != 'Command') {

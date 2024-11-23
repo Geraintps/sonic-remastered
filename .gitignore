@@ -1,7 +1,7 @@
 logs/*
 */logs
-app/node_modules/
-app/package-lock.json
+src/app/node_modules/
+src/app/package-lock.json
 .env
 
 login.php
