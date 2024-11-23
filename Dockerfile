@@ -7,6 +7,15 @@ RUN apt-get update && apt-get install -y \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
+# Configure PHP error logging
+RUN echo "log_errors = On" >> /usr/local/etc/php/php.ini \
+    && echo "error_log = /dev/stderr" >> /usr/local/etc/php/php.ini \
+    && echo "display_errors = Off" >> /usr/local/etc/php/php.ini
+
+# Configure Apache logging
+RUN ln -sf /dev/stdout /var/log/apache2/access.log \
+    && ln -sf /dev/stderr /var/log/apache2/error.log
+
 # Enable Apache modules
 RUN a2enmod rewrite
 
