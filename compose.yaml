@@ -1,0 +1,58 @@
+services:
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: local/sonic-bot:dev
+    container_name: sonic-web
+    hostname: sonic-web
+    restart: unless-stopped
+    ports:
+      - "8000:80"  # HOST:CONTAINER
+    volumes:
+      - ./src:/var/www/html
+      - /var/www/html/app/node_modules
+    environment:
+      - MYSQL_HOST=sonic-db
+    env_file: 
+      - .env
+    depends_on:
+      db:
+        condition: service_healthy
+    command: >
+      bash -c "apache2-foreground & sleep 5 && cd /var/www/html/app && node bot.js"
+
+  db:
+    image: mysql:8.0
+    container_name: sonic-db
+    hostname: sonic-db
+    restart: unless-stopped
+    env_file: 
+      - .env
+    volumes:
+      - db_data:/var/lib/mysql
+      - ./migrations:/docker-entrypoint-initdb.d  # MySQL automatically runs .sql files from here on first startup
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u$$MYSQL_USER", "-p$$MYSQL_PASSWORD"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    command: --default-authentication-plugin=caching_sha2_password
+
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    container_name: sonic-phpmyadmin
+    hostname: sonic-phpmyadmin
+    restart: unless-stopped
+    ports:
+      - "8080:80"  # HOST:CONTAINER
+    environment:
+      PMA_HOST: sonic-db
+    depends_on:
+      db:
+        condition: service_healthy
+
+volumes:
+  db_data:
+    name: sonic-db-data

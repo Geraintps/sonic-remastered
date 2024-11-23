@@ -4,14 +4,15 @@ const { SlashCommandBuilder } = require('@discordjs/builders');
 const { REST } = require('@discordjs/rest');
 const { Routes } = require('discord-api-types/v9');
 const isEmpty = (obj) => Object.keys(obj).length === 0;
+const postLink = 'http://127.0.0.1/requests/process.php';
 
 class Bot extends BotCore {
 
-	constructor(postLink, settings = {}, client) {
-		super(postLink, settings, client);
-		this.Command;
-		this.setup();
-	}
+	constructor(settings = {}, client) {
+        super(postLink, settings, client);
+        this.Command;
+        this.setup();
+    }
 
 	async setup() {
 

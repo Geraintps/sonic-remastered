@@ -1,0 +1,19 @@
+RewriteEngine On
+
+# Avoid redirect loop by excluding requests that already end in .php
+RewriteCond %{REQUEST_URI} !\.php$
+
+# Conditions to check if the request is not a file or directory
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+
+# Rewrite rule to append .php extension correctly
+RewriteRule ^([^/]+)/?$ $1.php [L]
+
+# Block all access
+RewriteRule ^app/ - [F,L]
+RewriteRule ^logs/ - [F,L]
+RewriteRule ^config/ - [F,L]
+
+# Pass environment variable through
+SetEnv ENCRYPTION_KEY ${ENCRYPTION_KEY}

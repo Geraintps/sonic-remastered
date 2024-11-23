@@ -1,7 +1,7 @@
 <?php
 function autoloadClasses($className) {
     $className = str_replace('\\', DIRECTORY_SEPARATOR, $className);
-	$fileName = __DIR__ . DIRECTORY_SEPARATOR . $className . '.class.php';
+    $fileName = dirname(__DIR__) . DIRECTORY_SEPARATOR . 'lib' . DIRECTORY_SEPARATOR . $className . '.class.php';
 
 	// check if the file exists
 	if (file_exists($fileName)) {
